@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { prisma } from "../../lib/prisma";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { userServices } from "./user.service";
 
 
 const getAllUser = async(req: Request, res: Response) =>{
@@ -21,11 +22,7 @@ const getAllUser = async(req: Request, res: Response) =>{
 const register = async(req:Request, res:Response)=>{
     const payload = req.body;
 
-    const hashedPassword = await bcrypt.hash(payload.password, 10)
-
-    const user = await prisma.user.create({
-        data: {...payload, password: hashedPassword}
-    });
+    const user = await userServices.register(payload);
 
     res.send({
         message: "Registerd Successfully", 
@@ -38,24 +35,8 @@ const login = async (req: Request, res:Response)=>{
 
     const { email , password } = req.body;
 
-    const user = await prisma.user.findUnique({where:{email}});
-
-    if(!user) {
-        return res.send({
-            message: "User not found",
-        })
-    }
-
-    const matchPassword = await bcrypt.compare(password, user.password)
-
-    if(!matchPassword) {
-        return res.send({
-            message: "Invalid Password",
-        })
-    }
-
-    const token = await jwt.sign({id: user.id, role: user.role }, "very secret",{expiresIn: "7d"} );
-
+    const token = await userServices.login(email as string, password as string)
+    
     res.send({
         message: "Logged in Successfully",
         token

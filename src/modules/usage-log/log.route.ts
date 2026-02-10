@@ -9,6 +9,6 @@ const usageLogRouter:ExpressRouter = Router();
 
 usageLogRouter.get("/",usageLogController.getUsageLog);
 usageLogRouter.post("/",auth([Role.Admin]), usageLogController.createUsageLog);
-usageLogRouter.patch("/:id", usageLogController.updateUsageLog);
+usageLogRouter.patch("/:id",auth(), usageLogController.updateUsageLog);
 
 export default usageLogRouter;
